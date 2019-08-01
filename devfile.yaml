@@ -53,28 +53,35 @@ components:
 
 commands:
 
-  - name: compile quarkus:dev
+  - name: Compile Quarkus in dev mode
     actions:
       - type: exec
         command: pkill java; mvn compile quarkus:dev
         component: quarkus-builder
         workdir: /projects/che-quarkus-demo/hello-quarkus
 
-  - name: package
+  - name: Run Quarkus as a normal (non-native) Java app
+    actions:
+      - type: exec
+        command: java -jar ./hello-quarkus-1.0-SNAPSHOT-runner -Dquarkus.http.host=0.0.0.0
+        component: quarkus-runner
+        workdir: /projects/che-quarkus-demo/hello-quarkus/target
+
+  - name: Compile Quarkus normally
     actions:
       - type: exec
         command: mvn package
         component: quarkus-builder
         workdir: /projects/che-quarkus-demo/hello-quarkus
 
-  - name: package -Pnative
+  - name: Compile Quarkus as a native app
     actions:
       - type: exec
         command: mvn package -Pnative
         component: quarkus-builder
         workdir: /projects/che-quarkus-demo/hello-quarkus
 
-  - name: start native
+  - name: Run Quarkus as a native app
     actions:
       - type: exec
         command: ./hello-quarkus-1.0-SNAPSHOT-runner -Dquarkus.http.host=0.0.0.0
