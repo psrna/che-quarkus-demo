@@ -31,6 +31,27 @@ components:
     command: ['tail']
     args: ['-f', '/dev/null']
 
+  -
+    type: dockerimage
+    alias: javatools
+    image: quay.io/eclipse/che-java8-maven:nightly
+    env:
+      - name: JAVA_OPTS
+        value: "-XX:MaxRAMPercentage=50.0 -XX:+UseParallelGC -XX:MinHeapFreeRatio=10
+          -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90
+          -Dsun.zip.disableMemoryMapping=true -Xms20m -Djava.security.egd=file:/dev/./urandom
+          -Duser.home=/home/user"
+      - name: MAVEN_OPTS
+        value: $(JAVA_OPTS)
+    memoryLimit: 768Mi
+    endpoints:
+      - name: '8080/tcp'
+        port: 8080
+    mountSources: true
+    volumes:
+      - name: m2
+        containerPath: /home/user/.m2
+
   - alias: git
     type: dockerimage
     image: sunix/git-devtools
@@ -63,15 +84,15 @@ commands:
   - name: Run Quarkus as a normal (non-native) Java app
     actions:
       - type: exec
-        command: java -jar ./hello-quarkus-1.0-SNAPSHOT-runner -Dquarkus.http.host=0.0.0.0
-        component: quarkus-runner
+        command: java -jar ./hello-quarkus-1.0-SNAPSHOT-runner.jar -Dquarkus.http.host=0.0.0.0
+        component: javatools
         workdir: /projects/che-quarkus-demo/hello-quarkus/target
 
   - name: Compile Quarkus normally
     actions:
       - type: exec
         command: mvn package
-        component: quarkus-builder
+        component: javatools
         workdir: /projects/che-quarkus-demo/hello-quarkus
 
   - name: Compile Quarkus as a native app
